@@ -67,15 +67,15 @@ int main(void) {
 	  return -1;
   }
 
-  svr.Get("/hi", [](const Request & /*req*/, Response &res) {
-    res.set_content("Hello World!", "text/plain");
+  svr.Get("/snapshot", [](const Request & /*req*/, Response &res) {
+    res.set_content("{\"result\":\"OK\"}", "application/json");
   });
 
   svr.set_error_handler([](const Request & /*req*/, Response &res) {
-	  const char *fmt = "<p>Error Status: <span style='color:red;'>%d</span></p>";
+	  const char *fmt = "{\"result\":\"ERROR\", \"status\":%d}";
 	  char buf[BUFSIZ];
 	  snprintf(buf, sizeof(buf), fmt, res.status);
-	  res.set_content(buf, "text/html");
+	  res.set_content(buf, "application/json");
   });
 
   svr.set_logger([](const Request &req, const Response &res) {
