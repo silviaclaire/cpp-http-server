@@ -6,7 +6,6 @@
 
 using namespace httplib;
 
-
 std::string dump_headers(const Headers &headers) {
 	std::string s;
 	char buf[BUFSIZ];
@@ -19,7 +18,6 @@ std::string dump_headers(const Headers &headers) {
 
 	return s;
 }
-
 
 std::string log(const Request &req, const Response &res) {
 	std::string s;
@@ -58,31 +56,30 @@ std::string log(const Request &req, const Response &res) {
 	return s;
 }
 
-
 int main(void) {
-  Server svr;
+	Server svr;
 
-  if (!svr.is_valid()) {
-	  printf("server has an error...\n");
-	  return -1;
-  }
+	if (!svr.is_valid()) {
+		printf("server has an error...\n");
+		return -1;
+	}
 
-  svr.Get("/snapshot", [](const Request & /*req*/, Response &res) {
-    res.set_content("{\"result\":\"OK\"}", "application/json");
-  });
+	svr.Get("/snapshot", [](const Request & /*req*/, Response &res) {
+		res.set_content("{\"result\":\"OK\"}", "application/json");
+	});
 
-  svr.set_error_handler([](const Request & /*req*/, Response &res) {
-	  const char *fmt = "{\"result\":\"ERROR\", \"status\":%d}";
-	  char buf[BUFSIZ];
-	  snprintf(buf, sizeof(buf), fmt, res.status);
-	  res.set_content(buf, "application/json");
-  });
+	svr.set_error_handler([](const Request & /*req*/, Response &res) {
+		const char *fmt = "{\"result\":\"ERROR\", \"status\":%d}";
+		char buf[BUFSIZ];
+		snprintf(buf, sizeof(buf), fmt, res.status);
+		res.set_content(buf, "application/json");
+	});
 
-  svr.set_logger([](const Request &req, const Response &res) {
-	  printf("%s", log(req, res).c_str());
-  });
+	svr.set_logger([](const Request &req, const Response &res) {
+		printf("%s", log(req, res).c_str());
+	});
 
-  svr.listen("localhost", 8080);
+	svr.listen("localhost", 8080);
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
