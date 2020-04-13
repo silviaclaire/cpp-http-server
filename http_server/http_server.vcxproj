@@ -153,9 +153,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="http_server.cpp" />
+    <ClCompile Include="src\Point.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\httplib.h" />
+    <ClInclude Include="include\Point.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

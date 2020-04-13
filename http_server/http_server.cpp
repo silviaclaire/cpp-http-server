@@ -4,9 +4,9 @@
 #include <httplib.h>
 #include <Windows.h>
 
-using namespace httplib;
+#include "Point.h"
 
-std::string dump_headers(const Headers &headers) {
+std::string dump_headers(const httplib::Headers &headers) {
 	std::string s;
 	char buf[BUFSIZ];
 
@@ -19,7 +19,7 @@ std::string dump_headers(const Headers &headers) {
 	return s;
 }
 
-std::string log(const Request &req, const Response &res) {
+std::string log(const httplib::Request &req, const httplib::Response &res) {
 	std::string s;
 	char buf[BUFSIZ];
 
@@ -40,7 +40,7 @@ std::string log(const Request &req, const Response &res) {
 	snprintf(buf, sizeof(buf), "%s\n", query.c_str());
 	s += buf;
 
-	s += dump_headers(req.headers);
+	//s += dump_headers(req.headers);
 
 	s += "--------------------------------\n";
 
@@ -56,27 +56,50 @@ std::string log(const Request &req, const Response &res) {
 	return s;
 }
 
+int snapshot_ok(void) {
+	Point p1(0, 0);
+	p1.move(3, 5);
+	printf("get_x:%d, get_y:%d\n", p1.get_x(), p1.get_y());
+	return 0;
+}
+
+int snapshot_err(void) {
+	throw std::runtime_error("failed!");
+	return -1;
+}
+
 int main(void) {
-	Server svr;
+	httplib::Server svr;
 
 	if (!svr.is_valid()) {
 		printf("server has an error...\n");
 		return -1;
 	}
 
-	svr.Get("/snapshot", [](const Request & /*req*/, Response &res) {
+	svr.Get("/snapshot_ok", [](const httplib::Request & /*req*/, httplib::Response &res) {
+		snapshot_ok();
 		res.set_content("{\"result\":\"OK\"}", "application/json");
 	});
 
-	svr.set_error_handler([](const Request & /*req*/, Response &res) {
+	svr.Get("/snapshot_err", [](const httplib::Request & /*req*/, httplib::Response &res) {
+		snapshot_err();
+		res.set_content("{\"result\":\"OK\"}", "application/json");
+	});
+
+	svr.set_error_handler([](const httplib::Request & /*req*/, httplib::Response &res) {
 		const char *fmt = "{\"result\":\"ERROR\", \"status\":%d}";
 		char buf[BUFSIZ];
 		snprintf(buf, sizeof(buf), fmt, res.status);
 		res.set_content(buf, "application/json");
 	});
 
-	svr.set_logger([](const Request &req, const Response &res) {
+	svr.set_logger([](const httplib::Request &req, const httplib::Response &res) {
 		printf("%s", log(req, res).c_str());
+	});
+
+	svr.Get("/stop", [&](const httplib::Request& req, httplib::Response& res) {
+		res.set_content("{\"result\":\"OK\"}", "application/json");
+		svr.stop();
 	});
 
 	svr.listen("localhost", 8080);
